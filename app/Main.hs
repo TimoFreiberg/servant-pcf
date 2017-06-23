@@ -3,7 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Main where
+module Main(main) where
 
 import qualified Data.Time.Format as Time
 import qualified Database.SQLite.Simple as SQL
@@ -11,19 +11,10 @@ import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Logger as Log
 import qualified Servant as Servant
 import Servant ((:<|>)((:<|>)), (:>), Get, JSON, Post, ReqBody)
-import Data.Pool (Pool, createPool, withResource)
+import Data.Pool (createPool)
 
 import Protolude
-import Types (CreateUserBody, User)
-
-getSingle :: (Show a, MonadError Servant.ServantErr m) => [a] -> m a
-getSingle [] = throw500 "Expected single result, found none"
-getSingle [x] = return x
-getSingle xs@(_:_:_) = throw500 $ "Expected single result, found: " <> show xs
-
-throw500 :: MonadError Servant.ServantErr m => LByteString -> m a
-throw500 message =
-  Servant.throwError (Servant.err500 {Servant.errBody = message})
+import Api
 
 getDbConn :: IO SQL.Connection
 getDbConn = SQL.open "test.db"
@@ -55,3 +46,4 @@ app = do
       settings
       (Servant.serve (Proxy @UsersApi) (getAllUsers dbPool :<|> createUser dbPool))
   -- Warp.run 8081 (Servant.serve (Proxy @GetAllUsers) (getAllUsers conn))
+

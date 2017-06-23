@@ -29,7 +29,9 @@ executable servant-sqlite
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , protolude >= 0.1.6 && < 0.2
-                     , sqlite-simple
+                     , persistent
+                     , persistent-sqlite
+                     , persistent-template
                      , servant-server
                      , warp
                      , wai-logger
