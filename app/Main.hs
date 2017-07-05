@@ -6,7 +6,6 @@
 module Main(main) where
 
 import qualified Data.Time.Format as Time
-import qualified Database.SQLite.Simple as SQL
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Logger as Log
 import qualified Servant as Servant
@@ -15,9 +14,6 @@ import Data.Pool (createPool)
 
 import Protolude
 import Api
-
-getDbConn :: IO SQL.Connection
-getDbConn = SQL.open "test.db"
 
 main :: IO ()
 main = app
@@ -38,12 +34,11 @@ app :: IO ()
 app = do
   let port = 8081 :: Int
   putText $ "starting server on port " <> show port
-  dbPool <- createPool getDbConn SQL.close 1 10 20
+  runMigration
   Log.withStdoutLogger $ \logger -> do
     let settings =
           Warp.setPort port $ Warp.setLogger logger Warp.defaultSettings
     Warp.runSettings
       settings
-      (Servant.serve (Proxy @UsersApi) (getAllUsers dbPool :<|> createUser dbPool))
+      (Servant.serve (Proxy @UsersApi) (getAllUsers :<|> createUser :<|> getUser))
   -- Warp.run 8081 (Servant.serve (Proxy @GetAllUsers) (getAllUsers conn))
-

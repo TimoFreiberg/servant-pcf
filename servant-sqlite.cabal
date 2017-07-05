@@ -41,6 +41,9 @@ executable servant-sqlite
                      , lens
                      , aeson
                      , wl-pprint-text
+                     , monad-control
+                     , exceptions
+                     , transformers-base
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings, NoImplicitPrelude
 

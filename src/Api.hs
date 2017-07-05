@@ -1,32 +1,53 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Api where
 
-import Data.Pool (Pool, withResource)
-import qualified Servant as Servant
-import Servant ((:<|>)((:<|>)), (:>), Get, JSON, Post, ReqBody)
+import Servant
+       ((:<|>), (:>), Capture, Get, Handler, JSON, Post, ReqBody,
+        ServantErr(errBody), err404, throwError)
 
-import Protolude
-import Api.Requests
+import qualified Database.Persist as DB
+import qualified Database.Persist.Sql as DB
+import Database.Persist.Sql (Entity)
+import Database.Persist.Sqlite (runSqlite)
+
+import qualified Api.Requests as Api
 import Persist.Models
+import Protolude
 
-type UsersApi = GetAllUsers :<|> CreateUser
+type UsersApi = GetAllUsers :<|> CreateUser :<|> GetUser
 
-type GetAllUsers = "users" :> Get '[ JSON] [User]
+type GetAllUsers = "users" :> Get '[ JSON] [Entity User]
 
 type CreateUser
-   = "users" :> ReqBody '[ JSON] CreateUserBody :> Post '[ JSON] Int64
+   = "users" :> ReqBody '[ JSON] Api.CreateUserBody :> Post '[ JSON] (Key User)
 
-getAllUsers :: Pool SQL.Connection -> Servant.Server GetAllUsers
-getAllUsers p =
-  withResource p $ \conn -> liftIO $ do SQL.query_ conn "select * from users"
+type GetUser = "users" :> Capture "id" (Key User) :> Get '[ JSON] User
 
-createUser :: Pool SQL.Connection -> Servant.Server CreateUser
-createUser p user =
-  withResource p $ \conn ->
-    liftIO $ do
-      SQL.withTransaction conn $ do
-        SQL.execute conn "insert into users (name, email) values (?, ?)" user :: IO ()
-        SQL.lastInsertRowId conn
+getAllUsers :: Handler [Entity User]
+getAllUsers = liftIO . runSqlite ":memory:" . readOnly $ DB.selectList [] []
+
+createUser :: Api.CreateUserBody -> Handler (Key User)
+createUser (Api.CreateUserBody name email) =
+  liftIO . runSqlite ":memory:" . readWrite $ DB.insert (User name email)
+
+getUser :: Key User -> Handler User
+getUser id =
+  liftIO (runSqlite ":memory:" . readOnly $ DB.get id) >>= \case
+    Nothing ->
+      throwError $ err404 {errBody = "No user found with id " <> show id}
+    Just user -> return user
+
+readOnly :: ReaderT DB.SqlReadBackend m a -> ReaderT DB.SqlReadBackend m a
+readOnly = identity
+
+readWrite :: ReaderT DB.SqlWriteBackend m a -> ReaderT DB.SqlWriteBackend m a
+readWrite = identity
+
+runMigration :: IO ()
+runMigration = runSqlite ":memory:" (DB.runMigration migrateAll)

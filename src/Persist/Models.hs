@@ -1,15 +1,16 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE EmptyDataDecls #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 module Persist.Models where
-
-import Data.Aeson
-       (FromJSON, ToJSON, defaultOptions, genericToEncoding, toEncoding)
 
 import Database.Persist.TH
        (mkMigrate, mkPersist, persistLowerCase, share, sqlSettings)
@@ -19,13 +20,8 @@ import Protolude
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
-User
+User json
   name Text
   email Text
   deriving Eq Show Generic
 |]
-
-instance FromJSON User
-
-instance ToJSON User where
-  toEncoding = genericToEncoding defaultOptions
