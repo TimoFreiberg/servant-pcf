@@ -1,4 +1,4 @@
-name:                servant-sqlite
+name:                servant-pcf
 version:             0.1.0.0
 -- synopsis:
 -- description:
@@ -16,35 +16,36 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   ghc-options:         -Wall
-  exposed-modules:     Lib
-  other-modules:       Lib.Prelude
+  exposed-modules:     Api
+                       Api.Requests
+                       Persist.Models
   build-depends:       base >= 4.7 && < 5
                      , protolude >= 0.1.6 && < 0.2
+                     , persistent-template
+                     , aeson
+                     , persistent
+                     , resource-pool
+                     , servant-server
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings, NoImplicitPrelude
 
-executable servant-sqlite
+executable servant-pcf
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , protolude >= 0.1.6 && < 0.2
-                     , persistent
-                     , persistent-sqlite
-                     , persistent-template
                      , servant-server
                      , warp
-                     , wai-logger
-                     , random
-                     , resource-pool
+                     , persistent-sqlite
                      , time
-                     , lens
-                     , aeson
-                     , wl-pprint-text
+                     , wai-logger
+                     , resource-pool
                      , monad-control
                      , exceptions
                      , transformers-base
                      , monad-logger
+                     , servant-pcf
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings, NoImplicitPrelude
 

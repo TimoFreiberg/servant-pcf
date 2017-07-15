@@ -10,12 +10,11 @@ module Main
 
 import qualified Control.Monad.Logger as Log
 import Data.Pool (Pool)
-import qualified Data.Time.Format as Time
 import Database.Persist.Sqlite (SqlBackend, createSqlitePool)
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Logger as Log
 import qualified Servant as Servant
-import Servant ((:<|>)((:<|>)), (:>), Get, JSON, Post, ReqBody)
+import Servant ((:<|>)((:<|>)))
 
 import Api
 import Protolude
@@ -23,6 +22,7 @@ import Protolude
 main :: IO ()
 main = app
 
+dbIdentifier :: Text
 dbIdentifier = "db.sqlite3"
 
 app :: IO ()
