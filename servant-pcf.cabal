@@ -13,22 +13,6 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
-library
-  hs-source-dirs:      src
-  ghc-options:         -Wall
-  exposed-modules:     Api
-                       Api.Requests
-                       Persist.Models
-  build-depends:       base >= 4.7 && < 5
-                     , protolude >= 0.1.6 && < 0.2
-                     , persistent-template
-                     , aeson
-                     , persistent
-                     , resource-pool
-                     , servant-server
-  default-language:    Haskell2010
-  default-extensions:  OverloadedStrings, NoImplicitPrelude
-
 executable servant-pcf
   hs-source-dirs:      app
   main-is:             Main.hs
@@ -45,7 +29,6 @@ executable servant-pcf
                      , exceptions
                      , transformers-base
                      , monad-logger
-                     , servant-pcf
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings, NoImplicitPrelude
 
