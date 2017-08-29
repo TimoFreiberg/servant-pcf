@@ -9,8 +9,11 @@ module Main
   ) where
 
 import Control.Monad.Catch (throwM)
+import Network.HTTP.Types.Status (Status)
+import Network.Wai (Request)
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Logger as Log
+import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import qualified Servant as Servant
 import Servant ((:>), Get, Handler, JSON)
 import System.Environment (getEnv)
@@ -38,7 +41,16 @@ app = do
            (ConfigException
               ("PORT must be a number, was " <> strConv Lenient portString)))
   putText $ "starting server on port " <> show port
-  Log.withStdoutLogger $ \logger -> do
-    let settings =
-          Warp.setPort port $ Warp.setLogger logger Warp.defaultSettings
-    Warp.runSettings settings (Servant.serve (Proxy @HealthApi) healthHandler)
+  -- Log.withStdoutLogger $ \logger -> do
+  --   let settings =
+  --         Warp.setPort port $ Warp.setLogger logger Warp.defaultSettings
+  let settings =
+        Warp.setPort port $ Warp.setLogger requestLogger Warp.defaultSettings
+  Warp.runSettings settings $
+    logStdoutDev (Servant.serve (Proxy @HealthApi) healthHandler)
+
+requestLogger :: Request -> Status -> Maybe Integer -> IO ()
+requestLogger _ _ _ = pure ()
+-- requestLogger req st intMay = putText $ show req <> show st <> show intMay
+
+
